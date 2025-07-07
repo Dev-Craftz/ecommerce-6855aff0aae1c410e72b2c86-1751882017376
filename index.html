@@ -1,0 +1,204 @@
+
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>hello</title>
+          <script src="https://cdn.tailwindcss.com"></script>
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+        </head>
+        <body>
+          <div class="min-h-screen" style="font-family:sans-serif;background-color:#F9FAFB;color:#1F2937"><header class="bg-black text-white py-4 sticky top-0 z-50"><div class="container mx-auto px-4 flex justify-between items-center"><h1 class="text-3xl font-bold">hello</h1><button class="sm:hidden focus:outline-none p-2"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg></button><nav class="sm:flex sm:space-x-6 hidden sm:flex-row absolute sm:static top-full left-0 right-0 bg-black sm:bg-transparent p-4 sm:p-0"><a href="#home" class="hover:text-gray-300">Home</a><a href="#products" class="hover:text-gray-300">Products</a><a href="#cart" class="hover:text-gray-300">Cart (<span id="cart-count">0</span>)</a><button id="login-btn" class="hover:text-gray-300">Login</button><button id="signup-btn" class="hover:text-gray-300">Signup</button></nav></div></header><main class="container mx-auto px-4 py-8"><section id="home" class="mb-12"><h2 class="text-4xl font-bold mb-4" style="opacity:0;transform:translateY(20px)">hello</h2><p class="text-lg">hello</p></section><section id="products" class="mb-12"><h2 class="text-3xl font-bold mb-6">Products</h2><div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"><div class="hover-effect p-4 rounded-lg" style="box-shadow:0 4px 6px -1px rgba(0, 0, 0, 0.1);border-radius:0.5rem;opacity:0;transform:scale(0.9)"><div class="w-full h-48 bg-gray-200 flex items-center justify-center">No Image</div><h3 class="text-xl font-semibold">hello</h3><p class="text-gray-600">hello</p><p class="text-lg font-bold price">$<!-- -->400.00</p><button class="mt-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 add-to-cart" style="background-color:#4B0082" data-product-id="0">Add to Cart</button></div></div></section><section id="cart" class="mb-12"><h2 class="text-3xl font-bold mb-6">Cart</h2><p>Your cart is empty.</p></section></main><footer class="bg-black text-white py-6"><div class="container mx-auto px-4 text-center"><p>Contact: <a href="mailto:dussauday469@gmail.com" class="hover:text-gray-300">dussauday469@gmail.com</a></p><p>WhatsApp: <a href="https://wa.me/6304478845" class="hover:text-gray-300">6304478845</a></p><p>© MADE BY DEVCRAFTZ <!-- -->2025<!-- --> <!-- -->hello</p></div></footer></div>
+          
+      <script>
+        document.addEventListener('DOMContentLoaded', () => {
+          const cart = JSON.parse(localStorage.getItem('cart') || '{}');
+          const users = JSON.parse(localStorage.getItem('users') || '[]');
+          const cartDetails = JSON.parse(localStorage.getItem('cartDetails') || '[]');
+          const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+          const components = JSON.parse(localStorage.getItem('components') || '{}');
+
+          const updateCartDisplay = () => {
+            const cartCount = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
+            document.querySelector('#cart-count').textContent = cartCount;
+          };
+
+          document.querySelectorAll('.add-to-cart').forEach(button => {
+            button.addEventListener('click', () => {
+              const user = JSON.parse(localStorage.getItem('user'));
+              if (!user) {
+                alert('Please log in to add items to cart.');
+                document.querySelector('#login-btn').click();
+                return;
+              }
+              const productId = button.dataset.productId;
+              cart[productId] = (cart[productId] || 0) + 1;
+              localStorage.setItem('cart', JSON.stringify(cart));
+              const cartDetail = {
+                user: { ...user },
+                items: Object.entries(cart).map(([id, quantity]) => ({
+                  productId: parseInt(id),
+                  quantity,
+                  name: document.querySelector(`[data-product-id="${id}"]`).parentElement.querySelector('h3').textContent,
+                  price: parseFloat(document.querySelector(`[data-product-id="${id}"]`).parentElement.querySelector('.price').textContent.replace('$', '')),
+                })),
+                timestamp: new Date().toISOString(),
+              };
+              cartDetails.push(cartDetail);
+              localStorage.setItem('cartDetails', JSON.stringify(cartDetails));
+              updateCartDisplay();
+              alert('Product added to cart!');
+            });
+          });
+
+          document.querySelector('#login-btn')?.addEventListener('click', () => {
+            document.querySelector('#login-form').style.display = 'block';
+            document.querySelector('#signup-form').style.display = 'none';
+          });
+
+          document.querySelector('#signup-btn')?.addEventListener('click', () => {
+            document.querySelector('#signup-form').style.display = 'block';
+            document.querySelector('#login-form').style.display = 'none';
+          });
+
+          document.querySelector('#login-form')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = e.target.querySelector('[name="email"]').value;
+            const password = e.target.querySelector('[name="password"]').value;
+            const user = users.find(u => u.email === email && u.password === password);
+            if (user) {
+              localStorage.setItem('user', JSON.stringify(user));
+              alert('Login successful!');
+              window.location.reload();
+            } else {
+              alert('Invalid email or password. Try admin@shop.com / admin123 for admin access.');
+            }
+          });
+
+          document.querySelector('#signup-form')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = e.target.querySelector('[name="name"]').value;
+            const email = e.target.querySelector('[name="email"]').value;
+            const phoneNumber = e.target.querySelector('[name="phoneNumber"]').value;
+            const password = e.target.querySelector('[name="password"]').value;
+            if (users.some(u => u.email === email)) {
+              alert('Email already registered.');
+              return;
+            }
+            const newUser = { name, email, phoneNumber, password };
+            users.push(newUser);
+            localStorage.setItem('users', JSON.stringify(users));
+            localStorage.setItem('user', JSON.stringify(newUser));
+            alert('Signup successful!');
+            window.location.reload();
+          });
+
+          document.querySelector('#logout-btn')?.addEventListener('click', () => {
+            localStorage.removeItem('user');
+            localStorage.removeItem('cart');
+            window.location.reload();
+          });
+
+          document.querySelector('#place-order-btn')?.addEventListener('click', () => {
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (!user) {
+              alert('Please log in to place an order.');
+              document.querySelector('#login-btn').click();
+              return;
+            }
+            if (Object.keys(cart).length === 0) {
+              alert('Cart is empty.');
+              return;
+            }
+            const order = {
+              user: { ...user },
+              items: Object.entries(cart).map(([id, quantity]) => ({
+                productId: parseInt(id),
+                quantity,
+                name: document.querySelector(`[data-product-id="${id}"]`).parentElement.querySelector('h3').textContent,
+                price: parseFloat(document.querySelector(`[data-product-id="${id}"]`).parentElement.querySelector('.price').textContent.replace('$', '')),
+              })),
+              total: Object.entries(cart).reduce((sum, [id, qty]) => sum + parseFloat(document.querySelector(`[data-product-id="${id}"]`).parentElement.querySelector('.price').textContent.replace('$', '')) * qty, 0),
+              timestamp: new Date().toISOString(),
+            };
+            orders.push(order);
+            localStorage.setItem('orders', JSON.stringify(orders));
+            localStorage.setItem('cart', '{}');
+            alert('Order placed successfully!');
+            window.location.reload();
+          });
+
+          document.querySelector('#admin-btn')?.addEventListener('click', () => {
+            document.querySelector('#admin').style.display = 'block';
+          });
+
+          document.querySelector('#add-product-form')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (!user || user.email !== 'admin@shop.com') {
+              alert('Only admins can add products.');
+              return;
+            }
+            const name = e.target.querySelector('[name="name"]').value;
+            const description = e.target.querySelector('[name="description"]').value;
+            const price = parseFloat(e.target.querySelector('[name="price"]').value);
+            const image = e.target.querySelector('[name="image"]').value;
+            components.products = components.products || [];
+            components.products.push({ name, description, price, image });
+            localStorage.setItem('components', JSON.stringify(components));
+            alert('Product added successfully!');
+            e.target.reset();
+            window.location.reload();
+          });
+
+          document.querySelector('#login-form .cancel-btn')?.addEventListener('click', () => {
+            document.querySelector('#login-form').style.display = 'none';
+          });
+
+          document.querySelector('#signup-form .cancel-btn')?.addEventListener('click', () => {
+            document.querySelector('#signup-form').style.display = 'none';
+          });
+
+          updateCartDisplay();
+        });
+      </script>
+      <style>
+        :root {
+          --primary: #4B0082;
+          --secondary: #FF4500;
+          --bg: #F9FAFB;
+          --text: #1F2937;
+          --font: sans-serif;
+          --rounded: 0.5rem;
+          --section-padding: 4rem;
+          --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes float {
+          0% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+          100% { transform: translateY(0px); }
+        }
+        .custom-animation {
+          animation: float 3s ease-in-out infinite;
+        }
+        .hover-effect {
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .hover-effect:hover {
+          transform: scale(1.03);
+          
+          
+        }
+        img.logo { max-width: 150px; max-height: 150px; object-fit: contain; }
+        img.product-img { max-width: 300px; max-height: 200px; object-fit: cover; }
+        body { background: linear-gradient(to bottom right, #f9fafb, #e5e7eb); }
+        @media (prefers-color-scheme: dark) {
+          body { background: linear-gradient(to bottom right, #1f2937, #374151); }
+        }
+        #login-form, #signup-form { display: none; }
+      </style>
+    
+        </body>
+        </html>
+      
